@@ -13,26 +13,35 @@ def preprocessing(image_path: str, module: str):
     '''
     modules = ["whole", "name", "set", "oracle"]
 
+    # Read the image from image path (might need to be changed later on)
+    # and plug it into the functions defined below
     image = cv2.imread(image_path)
     contour = get_contour(image)
     cropped_image = card_extraction(image, contour)
-    cropped_image_contiguous = np.ascontiguousarray(cropped_image)
-    image = Image.fromarray(cropped_image_contiguous)
-    cropped_image = image.resize((400, 600))
 
+    # Transform the cropped card into an array (necessary to use the PIL (pillow)
+    # library for resizing the image)
+    cropped_image_contiguous = np.ascontiguousarray(cropped_image)
+    card_image = Image.fromarray(cropped_image_contiguous)
+
+    # Resize the image to width, height
+    cropped_card = card_image.resize((400, 600))
+
+    # Mask the cropped_card according to the specified module using Pillow crop
+    # (left x, smaller y coordinate, right x, larger y coordinate)
     if module in modules:
 
         if module == "whole":
-            return cropped_image
+            return cropped_card
 
         elif module == "name":
-            return cropped_image.crop((0,0,400,85))
+            return cropped_card.crop((0,0,400,85))
 
         elif module == "set":
-            return cropped_image.crop((0,300,400,375))
+            return cropped_card.crop((0,300,400,375))
 
         elif module == "oracle":
-            return cropped_image.crop((0,350,400,550))
+            return cropped_card.crop((0,350,400,550))
 
     else:
 
