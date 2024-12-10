@@ -7,8 +7,10 @@ pandas
 matplotlib
 seaborn
 scikit-learn
+direnv
 opencv-python
 pytesseract
 transformers
 torch
 torchvision
+fuzzywuzzy
