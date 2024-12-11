@@ -88,29 +88,3 @@ def get_croped_image(image, module):
 
         print("❌Module not found. Revisit the possible modules and select an existing one!❌")
         return None
-
-    # Mask the cropped_card according to the specified module using Pillow crop
-    # (left x, smaller y coordinate, right x, larger y coordinate)
-
-    if module in modules:
-
-        if module == "whole":
-            return resized_card
-
-        elif module == "name":
-            return resized_card[0:400,0:65]
-
-        elif module == "set":
-            tmp = resized_card[0:400,325:395]
-            text = py.image_to_string(tmp)
-            if text == "":
-                return resized_card[0:400,500:550]
-            return tmp
-
-        elif module == "oracle":
-            return resized_card[0:400,350:550]
-
-    else:
-
-        print("❌Module not found. Revisit the possible modules and select an existing one!❌")
-        return None
