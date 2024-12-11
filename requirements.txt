@@ -13,4 +13,3 @@ pytesseract
 transformers
 torch
 torchvision
-fuzzywuzzy
