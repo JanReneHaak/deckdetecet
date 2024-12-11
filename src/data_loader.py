@@ -10,7 +10,7 @@ def load_card_image_data(json_file):
     # Handle rows with missing or invalid 'image_uris'
     def extract_image_data(row):
         try:
-            return {"id": row["id"], "image_uri": row["image_uris"]["small"]}
+            return {"id": row["id"], "image_uri": row["image_uris"]["normal"]}
         except (TypeError, KeyError):
             return None  # Ignore rows with missing or invalid data
 

@@ -27,8 +27,8 @@ def download_images(json_file, output_folder, num_images=None):
 
 if __name__ == "__main__":
     # Input file and output folder
-    json_file = "raw_data/card_collections/default-cards.json"
-    output_folder = "raw_data/images_small"
+    json_file = "raw_data/card_collections/default_cards.json"
+    output_folder = "raw_data/default_cards_images"
 
     # 1. Download all images
     # download_images(json_file, output_folder)
