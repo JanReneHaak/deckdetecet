@@ -1,10 +1,55 @@
+# Essential tools and utilities
+wheel
 pytest
 pylint
-ipdb
 jupyterlab
+yapf
+ipdb
+ipykernel
+colorama
+python-dotenv
+
+# Data manipulation and visualization
 numpy
 pandas
 matplotlib
 seaborn
+scipy
+
+# Machine learning and deep learning
 scikit-learn
+tensorflow-macos==2.10.0; sys_platform == 'darwin' and 'ARM' in platform_version  # Mac M-chips
+tensorflow==2.10.0; sys_platform == 'darwin' and 'ARM' not in platform_version  # Mac Intel chips
+tensorflow==2.10.0; sys_platform != 'darwin'  # Windows & Ubuntu Intel chips
+h5py
+
+# Geospatial processing
+pygeohash
+
+# Computer vision
 opencv-python
+
+# Google Cloud SDKs
+google-cloud-bigquery
+google-cloud-storage
+google-api-core
+googleapis-common-protos
+protobuf
+db-dtypes
+pyarrow
+fastapi
+uvicorn
+
+# Frontend
+streamlit
+requests
+
+# Machine Learning lifecycle and workflows
+mlflow==2.1.1
+prefect==2.19.2
+
+# Database connectivity
+psycopg2-binary
+
+# Prevent duplicate library listings
+nbresult  # Used for tracking notebook test results
