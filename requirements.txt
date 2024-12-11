@@ -8,3 +8,6 @@ matplotlib
 seaborn
 scikit-learn
 opencv-python
+os
+aiohttp
+asyncio
