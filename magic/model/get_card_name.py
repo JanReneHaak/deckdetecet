@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from ml_logic.preprocess import preprocessing
+from magic.ml_logic.preprocess import preprocessing
 from transformers import TrOCRProcessor, VisionEncoderDecoderModel
 import string
 
