@@ -1,10 +1,47 @@
 import numpy as np
 from PIL import Image
 import cv2
-import heapq
+import matplotlib.pyplot as plt
+import pytesseract as py
+
+# Initialize global variables
+drawing = False  # True if the mouse is pressed
+ix, iy = -1, -1  # Initial coordinates
+upper_lower_border = []
 
 
 def preprocessing(image_path: str, module: str):
+
+    image = cv2.imread(image_path)
+    cropped = get_croped_image(image, module)
+
+    return cropped
+
+
+def draw_rectangle(event, x, y, flags, param):
+    global ix, iy, drawing
+
+    # When the left mouse button is pressed
+    if event == cv2.EVENT_LBUTTONDOWN:
+        drawing = True
+        ix, iy = x, y  # Record starting point
+
+    # While moving the mouse and holding the button
+    elif event == cv2.EVENT_MOUSEMOVE:
+        if drawing:
+            temp_img = param.copy()  # To show the rectangle interactively
+            cv2.rectangle(temp_img, (ix, iy), (x, y), (255, 0, 0), 2)
+            cv2.imshow("Image", temp_img)
+
+    # When the mouse button is released
+    elif event == cv2.EVENT_LBUTTONUP:
+        drawing = False
+        cv2.rectangle(param, (ix, iy), (x, y), (255, 0, 0), 2)
+        cv2.imshow("Image", param)
+        upper_lower_border.append((ix, iy, x, y))
+
+
+def get_croped_image(image, module):
     '''
     A function that combines the get_contour and get_card function. Takes the
     image path (or image, depends on how we will process this later on) and returns
@@ -12,19 +49,19 @@ def preprocessing(image_path: str, module: str):
     module name.
     '''
     modules = ["whole", "name", "set", "oracle"]
+    cv2.imshow("Image", image)
 
-    # Read the image from image path (might need to be changed later on)
-    # and plug it into the functions defined below
-    image = cv2.imread(image_path)
-    contour = get_contour(image)
-    cropped_image = card_extraction(image, contour)
+    # Set the mouse callback
+    cv2.setMouseCallback("Image", draw_rectangle, image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
-    # Transform the cropped card into an array (necessary to use the PIL (pillow)
-    # library for resizing the image)
-    cropped_image_contiguous = np.ascontiguousarray(cropped_image)
+    # Resize the image to width, height
+    cropped_image_contiguous = np.ascontiguousarray(image)
     card_image = Image.fromarray(cropped_image_contiguous)
 
     # Resize the image to width, height
+    card_image = card_image.crop(upper_lower_border[0])
     cropped_card = card_image.resize((400, 600))
 
     # Mask the cropped_card according to the specified module using Pillow crop
@@ -35,10 +72,14 @@ def preprocessing(image_path: str, module: str):
             return cropped_card
 
         elif module == "name":
-            return cropped_card.crop((0,0,400,85))
+            return cropped_card.crop((0,0,400,65))
 
         elif module == "set":
-            return cropped_card.crop((0,300,400,375))
+            tmp = cropped_card.crop((0,300,400,375))
+            text = py.image_to_string(tmp)
+            if text == "":
+                return cropped_card.crop((0,500,400,550))
+            return tmp
 
         elif module == "oracle":
             return cropped_card.crop((0,350,400,550))
@@ -48,55 +89,28 @@ def preprocessing(image_path: str, module: str):
         print("❌Module not found. Revisit the possible modules and select an existing one!❌")
         return None
 
+    # Mask the cropped_card according to the specified module using Pillow crop
+    # (left x, smaller y coordinate, right x, larger y coordinate)
 
-def get_contour(image):
-    '''
-    This function will take an input image and detect different contours
-    using Open CV.
-    '''
+    if module in modules:
 
-    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        if module == "whole":
+            return resized_card
 
-    # Applying binary thresholding
-    ret, thresh = cv2.threshold(gray_image, 150, 255, cv2.THRESH_BINARY)
+        elif module == "name":
+            return resized_card[0:400,0:65]
 
-    # Detect the contours on the binary image using cv2.CHAIN_APPROX_SIMPLE
-    # Using the SIMPLE method reduces computational time while maintaining
-    # accuracy
-    contours, _ = cv2.findContours(image=thresh, mode=cv2.RETR_TREE,
-                                            method=cv2.CHAIN_APPROX_SIMPLE)
+        elif module == "set":
+            tmp = resized_card[0:400,325:395]
+            text = py.image_to_string(tmp)
+            if text == "":
+                return resized_card[0:400,500:550]
+            return tmp
 
-    return contours
+        elif module == "oracle":
+            return resized_card[0:400,350:550]
 
+    else:
 
-def card_extraction(image, contours):
-    '''
-    This function will take the input image and the contours from above to
-    slice the original image based on the second largest contour.
-    This will be the card that needs to be detected.
-    '''
-
-    areas = []
-
-    # Store contour areas and the corresponding indices
-    for index, contour in enumerate(contours):
-        x, y, w, h = cv2.boundingRect(contour)
-        areas.append(((w * h), index))
-
-    # Extract the second largest areas from the areas list
-    largest_two = heapq.nlargest(2, {area for area, _ in areas})  # Get the two largest unique areas
-    if len(largest_two) > 1:
-        second_largest_area = largest_two[1] # Define that the second largest area is the second element
-
-    # Find the contour associated with the second largest area
-    for area, index in areas:
-        if area == second_largest_area:
-            area_key = index
-            break
-
-    x, y, w, h = cv2.boundingRect(contours[area_key]) # The index of the second largest contour is used to index the contours
-
-    # Crop the region of interest from the original image
-    cropped = image[y:y+h, x:x+w]
-
-    return cropped
+        print("❌Module not found. Revisit the possible modules and select an existing one!❌")
+        return None
