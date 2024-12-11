@@ -13,3 +13,4 @@ pytesseract
 transformers
 torch
 torchvision
+openai
