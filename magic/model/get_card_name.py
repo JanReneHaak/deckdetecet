@@ -19,7 +19,6 @@ def get_card_name(image_path: str, df: pd.DataFrame):
     return card_name
 
 
-
 def image_to_text(image):
     processor = TrOCRProcessor.from_pretrained("microsoft/trocr-base-stage1")
     model = VisionEncoderDecoderModel.from_pretrained("microsoft/trocr-base-stage1")
