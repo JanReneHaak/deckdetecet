@@ -5,10 +5,10 @@ import openai
 
 def get_counters(card_name: str):
     '''
-    This function will output a list with the specified number_of_counters. As an input, the
-    card_name is needed. The function utilizes the OpenAI API using gpt-4o. The
-    output can then be used in the similarity function to show cards with a
-    similar ability/oracle text.
+    This function will output a list with number_of_counters card names. As an
+    input, the card_name is needed. The function utilizes the OpenAI API using
+    gpt-4o. The output can then be used in the similarity function to show cards
+    with a similar ability/oracle text.
     '''
 
     # Initialize the OpenAI API client using the OpenAI Key saved in .env file
@@ -16,7 +16,7 @@ def get_counters(card_name: str):
 
     # Generating the prompt for the OpenAI model
     number_of_counters = 3
-    prompt= f"Output {number_of_counters} mechanisms to counter this Magic: The Gathering card {card_name} using maximum ten words per mechanism. Do not provide more information and do not use {card_name} in your answer. Thank you"
+    prompt= f"Output {number_of_counters} cards that are effective against this Magic: The Gathering card {card_name} Do not provide more information and do not use {card_name} in your answer"
 
     # Make a request to the API to generate text
     response = openai.chat.completions.create(
