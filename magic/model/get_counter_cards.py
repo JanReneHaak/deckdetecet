@@ -1,5 +1,5 @@
 from magic.params import *
-from get_card_name import clean_up
+from magic.model.get_card_name import clean_up
 import openai
 
 
