@@ -27,5 +27,5 @@ def get_counters(card_name: str):
 
     # Cleans the output at converts it to a list
     output = clean_up(response.choices[0].message.content).splitlines()
-    output = [word.strip() for word in output]
+    output = [word.strip().title() for word in output]
     return output
