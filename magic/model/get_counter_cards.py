@@ -11,6 +11,10 @@ def get_counters(card_name: str):
     with a similar ability/oracle text.
     '''
 
+    if "❌" in card_name:
+
+        return "❌ Your card has no name! Did you use the correct image? ❌"
+
     # Initialize the OpenAI API client using the OpenAI Key saved in .env file
     openai.api_key = OPENAI_API_KEY
 

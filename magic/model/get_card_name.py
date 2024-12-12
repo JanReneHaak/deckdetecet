@@ -13,7 +13,7 @@ def get_card_name(image_path: str, df: pd.DataFrame):
 
     if cleaned_text == "":
 
-        return print("❌ We can't process your card at the current stage. Sorry 🫰")
+        return "❌ Your card has no name! Did you use the correct image? ❌"
 
     card_name = name_based_similarity(cleaned_text, df).title()
     return card_name
