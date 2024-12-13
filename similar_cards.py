@@ -19,7 +19,7 @@ def string_to_array(s):
 
 def similar_cards(input_string):
     df_emb = pd.read_csv('trim_emb_df4.csv',index_col=0)
-    model = SentenceTransformer('/Users/peterleslie/code/JanReneHaak/deckdetect/saved_model/my_model')
+    model = SentenceTransformer('saved_model/my_model')
 
     # Apply the function to the Series
     df_emb['embeddings'] = df_emb['embeddings'].apply(string_to_array)
