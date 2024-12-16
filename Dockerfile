@@ -1,20 +1,23 @@
-# Use an official Python runtime as a parent image
-FROM python:3.9-slim
+# Use a Python base image
+FROM python:3.10-slim
 
-# Set the working directory in the container
+# Set the working directory
 WORKDIR /app
 
-# Copy the current directory contents into the container at /app
+# Copy the application code and JSON file
 COPY . /app
+# RUN apt-get update && apt-get install -y python3-opencv
 
-# Install any needed packages specified in requirements.txt
+# Copy Google Cloud credentials #MAITE
+COPY credentials.json /app/credentials.json
+
+# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Make port 80 available to the world outside this container
-EXPOSE 80
+# TEST MAITE
+# Expose the port for the FastAPI app
+# EXPOSE 8000
 
-# Define environment variable
-ENV NAME World
-
-# Run app.py when the container launches
-CMD ["python", "app.py"]
+# Command to run the application
+CMD uvicorn magic.api.fast:app --host 0.0.0.0 --port $PORT
+# CMD ["uvicorn", "magic.api.fast:app", "--host", "0.0.0.0", "--port", "8000"]

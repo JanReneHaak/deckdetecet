@@ -1,15 +1,55 @@
-pytest
-pylint
-ipdb
-jupyterlab
-numpy
-pandas
-matplotlib
-seaborn
-scikit-learn
-direnv
-opencv-python
-pytesseract
-transformers
-torch
-torchvision
+# Core dependencies
+starlette>=0.25.0
+six>=1.15.0
+numpy>=1.23.0
+pandas>=1.5.3
+matplotlib>=3.6.3
+seaborn>=0.11.0
+scikit-learn>=1.0.0
+transformers>=4.0.0
+torch>=2.0.1
+torchvision>=0.15.2
+pytesseract>=0.3.9
+Pillow>=8.0.0
+requests>=2.25.0
+python-dotenv>=1.0.0
+sentence-transformers>=2.0.0  # Sentence embeddings
+
+# API documentation
+fastapi>=0.100.0
+uvicorn>=0.23.0
+python-multipart>=0.0.5
+
+# Computer Vision
+opencv-python-headless>=4.5.0  # Use for environments without GUI
+#opencv-python>=4.5.0  # Optional: Include if GUI support is needed
+
+# Packaging and distribution
+pip>=9
+setuptools>=26
+twine>=4.0.0
+wheel>=0.29
+
+# Cloud integration
+google-cloud-storage>=2.0.0
+google-cloud-bigquery>=2.0.0
+pyarrow>=5.0.0  # For BigQuery integration
+fastparquet>=0.8.0  # Optional: Faster parquet handling
+
+# Development and testing tools
+pytest>=6.0.0
+pytest-cov>=3.0.0  # Test coverage reporting
+pylint>=2.8.0  # Linter
+black>=22.0.0  # Code formatter
+mypy>=0.910  # Type checking
+ipdb>=0.13.0  # Debugging
+
+# Notebook
+jupyterlab>=3.0.0
+
+# OpenAI GPT-3
+openai>=0.27.0
+
+# Text processing
+rapidfuzz>=1.6.0
+sentence-transformers>=2.0.0
