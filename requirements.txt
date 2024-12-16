@@ -9,6 +9,11 @@ seaborn
 scikit-learn
 direnv
 opencv-python
+os
+aiohttp
+asyncio
+random
+Pillow
 pytesseract
 transformers
 torch
