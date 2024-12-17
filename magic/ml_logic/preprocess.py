@@ -1,9 +1,6 @@
-import numpy as np
 from PIL import Image
-import matplotlib.pyplot as plt
 import pytesseract as py
 import logging
-from PIL import Image
 
 # Preprocess the image to extract the card name and set
 def preprocessing(image_path: str, module: str):
