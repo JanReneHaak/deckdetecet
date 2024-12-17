@@ -11,10 +11,10 @@ from sentence_transformers import SentenceTransformer
 # Custom imports from the magic package
 from magic.utils import logger
 from magic.ml_logic.preprocess import preprocessing
-from magic.models.get_card_name import get_card_name
-from magic.models.get_card_set import get_card_set
-from magic.models.get_similar_cards import get_similar_cards
-from magic.models.get_counter_cards import get_counter_cards
+from magic.get_model_all.get_card_name import get_card_name
+from magic.get_model_all.get_card_set import get_card_set
+from magic.get_model_all.get_similar_cards import get_similar_cards
+from magic.get_model_all.get_counter_cards import get_counter_cards
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -36,7 +36,7 @@ def string_to_array(s):
 df_emb['embeddings'] = df_emb['embeddings'].apply(string_to_array)
 
 # Preload the SentenceTransformer model for similar cards search
-model_similar = SentenceTransformer("magic/models/sentence_transformer")
+model_similar = SentenceTransformer("magic/get_model_all/sentence_transformer")
 
 # Health check endpoint to ensure the API is running
 @app.get("/")
@@ -45,8 +45,8 @@ def health_check():
     return {"status": "Magic API is running on Black Lotus!"}
 
 # Endpoint to process a card image and return card details
-@app.post("/process_card")
-def process_card(image: UploadFile = File(...)):
+@app.post("/get_infos")
+def get_infos(image: UploadFile = File(...)):
 
     # Validate file type
     if not image.content_type.startswith("image"):
@@ -64,6 +64,9 @@ def process_card(image: UploadFile = File(...)):
     except Exception as e:
         logger.error(f"Error saving image: {e}")
         raise HTTPException(status_code=500, detail="Image could not be saved.")
+
+    # Generating the response list. All responses from below will be stored in there
+    response = []
 
     # Process the image
     try:
@@ -84,23 +87,19 @@ def process_card(image: UploadFile = File(...)):
         # Search card data using name and set
         # card_data = df[(df["name"].str.lower() == card_name.lower()) &
         #               (df["set"].str.lower() == card_set.lower())].iloc[0]
-        response = {
-            "id": card_data["id"],
+        response.append({
             "name": card_data["name"],
             "set": card_data["set"],
-            "oracle_text": None if pd.isna(card_data["oracle_text"]) else card_data["oracle_text"],
-            "price_usd": None if pd.isna(card_data["price_usd"]) else card_data["price_usd"],
             "image_uri_normal": None if pd.isna(card_data["image_uri_normal"]) else card_data["image_uri_normal"]
-        }
+        })
         logging.info(f"Card details: {response}")
-        return JSONResponse(content=response)
+
     except Exception as e:
         logger.error(f"Error processing card: {e}")
         raise HTTPException(status_code=500, detail="Error processing the card.")
 
-# Endpoint to fetch similar cards based on card name
-@app.get("/get_similar_cards/{card_name}")
-def get_similar_cards_endpoint(card_name: str):
+
+    """Fetch similar cards using get_similar_cards function and return their image URLs."""
     try:
         # Call the get_similar_cards function and log the result
         similar_cards = get_similar_cards(card_name, df_emb, model_similar)
@@ -110,28 +109,27 @@ def get_similar_cards_endpoint(card_name: str):
             logging.error(f"No similar cards found for '{card_name}'.")
             raise ValueError(f"No similar cards found for '{card_name}'.")
 
+        # Set the count for the counter for loop to 1
+        count = 1
+
         # Prepare the response with image URLs
-        response = []
         for name in similar_cards:
-            card_row = df[df["name"].str.lower() == similar_cards.lower()]
+            card_row = df[df["name"].str.lower() == name.lower()]
             logging.info(f"Counter card row: {card_row}")
             if not card_row.empty:
                 card_data = card_row.iloc[0]  # Take the first match if multiple
                 # Append card details to response
                 response.append({
-                    "name": card_data["name"],
-                    "image_uri_normal": None if pd.isna(card_data["image_uri_normal"]) else card_data["image_uri_normal"]
-        })
+                                f"similar_{count}": card_data["name"],
+                                f"similar_{count}_uri_normal": None if pd.isna(card_data["image_uri_normal"]) else card_data["image_uri_normal"]
+                                })
                 logging.info(f"Similar card details: {card_row.iloc[0]}")
-        return JSONResponse(content=response)
-
+            count += 1 # Increase the count every step
     except Exception as e:
         logging.error(f"Error fetching similar cards: {e}")
         raise HTTPException(status_code=500, detail=f"Error: {e}")
 
-# Endpoint to fetch similar cards based on card name
-@app.get("/get_counter_cards/{card_name}")
-def get_counter_cards_endpoint(card_name: str):
+
     """Fetch counter cards using OpenAI API and return their image URLs."""
     try:
         #df = pd.read_csv(CSV_ID)
@@ -141,8 +139,10 @@ def get_counter_cards_endpoint(card_name: str):
         if isinstance(counter_card_names, str):
             raise ValueError(counter_card_names)
 
+        # Set the count for the counter for loop to 1
+        count = 1
+
         # Fetch card details based on name
-        response = []
         for counter_name in counter_card_names:
             card_row = df[df["name"].str.lower() == counter_name.lower()]
             logging.info(f"Counter card row: {card_row}")
@@ -150,14 +150,18 @@ def get_counter_cards_endpoint(card_name: str):
                 card_data = card_row.iloc[0]  # Take the first match if multiple
                 # Append card details to response
                 response.append({
-                    "name": card_data["name"],
-                    "image_uri_normal": None if pd.isna(card_data["image_uri_normal"]) else card_data["image_uri_normal"]
-        })
+                            f"counter_{count}": card_data["name"],
+                            f"counter_{count}_uri_normal": None if pd.isna(card_data["image_uri_normal"]) else card_data["image_uri_normal"]
+                                })
                 logging.info(f"Counter card details: {card_data}")
+            count += 1 # Increase the count each iteration
         if not response:
             raise ValueError("No counter cards found in the database.")
         logging.info(f"Response: {response}")
-        return JSONResponse(content=response)
+
     except Exception as e:
         logger.error(f"Error fetching counter cards: {e}")
         raise HTTPException(status_code=500, detail=f"Error fetching counter cards: {e}")
+
+    # Return the final response as a JSON
+    return JSONResponse(content=response)
