@@ -19,7 +19,7 @@ def preprocessing(image_path: str, module: str):
 
 
 def draw_rectangle(event, x, y, flags, param):
-    global ix, iy, drawing
+    global ix, iy, drawing, upper_lower_border
 
     # When the left mouse button is pressed
     if event == cv2.EVENT_LBUTTONDOWN:

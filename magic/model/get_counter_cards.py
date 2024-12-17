@@ -20,7 +20,8 @@ def get_counters(card_name: str):
 
     # Generating the prompt for the OpenAI model
     number_of_counters = 3
-    prompt= f"Output {number_of_counters} cards that are effective against this Magic: The Gathering card {card_name} Do not provide more information and do not use {card_name} in your answer"
+
+    prompt= f"Output {number_of_counters} cards that are effective against {card_name}. Do not provide anything more than the names of the counters in separate lines without numbers, do not say that {card_name} is a Magic The Gathering card and do not use {card_name} in your answer"
 
     # Make a request to the API to generate text
     response = openai.chat.completions.create(
@@ -30,6 +31,6 @@ def get_counters(card_name: str):
         )
 
     # Cleans the output at converts it to a list
-    output = clean_up(response.choices[0].message.content).splitlines()
-    output = [word.strip().title() for word in output]
+    output = response.choices[0].message.content.splitlines()
+    output = [word.strip() for word in output]
     return output
