@@ -75,10 +75,10 @@ def get_croped_image(image, module):
             return cropped_card.crop((0,0,400,65))
 
         elif module == "set":
-            tmp = cropped_card.crop((0,300,400,375))
+            tmp = cropped_card.crop((315, 325, 385, 385))
             text = py.image_to_string(tmp)
             if text == "":
-                return cropped_card.crop((0,500,400,550))
+                return cropped_card.crop((315, 325, 385, 385))
             return tmp
 
         elif module == "oracle":
