@@ -1,0 +1,30 @@
+# Core dependencies
+numpy>=1.23.0
+pandas>=1.5.3
+scikit-learn>=1.0.0
+torch>=2.0.1
+torchvision>=0.15.2
+Pillow>=8.0.0
+requests>=2.25.0
+python-dotenv>=1.0.0
+sentence-transformers>=2.0.0
+transformers>=4.0.0
+rapidfuzz>=1.6.0
+pytesseract>=0.3.9
+
+# API documentation
+fastapi>=0.100.0
+uvicorn>=0.23.0
+python-multipart>=0.0.5
+
+
+# NLP tools
+openai>=0.27.0
+
+# Cloud integration
+google-cloud-storage>=2.0.0
+
+# Development tools
+pytest>=6.0.0
+pylint>=2.8.0
+black>=22.0.0
