@@ -88,7 +88,7 @@ def process_card(image: UploadFile = File(...)):
             "id": card_data["id"],
             "name": card_data["name"],
             "set": card_data["set"],
-            "oracle_text": card_data["oracle_text"],
+            "oracle_text": None if pd.isna(card_data["oracle_text"]) else card_data["oracle_text"],
             "price_usd": None if pd.isna(card_data["price_usd"]) else card_data["price_usd"],
             "image_uri_normal": None if pd.isna(card_data["image_uri_normal"]) else card_data["image_uri_normal"]
         }
@@ -113,12 +113,15 @@ def get_similar_cards_endpoint(card_name: str):
         # Prepare the response with image URLs
         response = []
         for name in similar_cards:
-            card_row = df[df['name'].str.lower() == name.lower()]
+            card_row = df[df["name"].str.lower() == similar_cards.lower()]
+            logging.info(f"Counter card row: {card_row}")
             if not card_row.empty:
+                card_data = card_row.iloc[0]  # Take the first match if multiple
+                # Append card details to response
                 response.append({
-                    "name": card_row.iloc[0]["name"],
-                    "image_uri_normal": card_row.iloc[0]["image_uri_normal"]
-                })
+                    "name": card_data["name"],
+                    "image_uri_normal": None if pd.isna(card_data["image_uri_normal"]) else card_data["image_uri_normal"]
+        })
                 logging.info(f"Similar card details: {card_row.iloc[0]}")
         return JSONResponse(content=response)
 

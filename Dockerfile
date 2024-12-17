@@ -9,7 +9,7 @@ COPY . /app
 # RUN apt-get update && apt-get install -y python3-opencv
 
 # Copy Google Cloud credentials #MAITE
-COPY credentials.json /app/credentials.json
+# COPY credentials.json /app/credentials.json
 
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
@@ -18,4 +18,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 # EXPOSE 8000
 
 # Command to run the application
-CMD uvicorn magic.api.fast:app --host 0.0.0.0 --port $PORT
+CMD ["uvicorn", "magic.api.fast:app", "--host", "0.0.0.0", "--port", "${PORT}"]
