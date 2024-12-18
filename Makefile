@@ -2,7 +2,7 @@ install:
 	pip install --no-cache-dir -r requirements.txt
 
 run_api:
-	uvicorn magic.api.fast:app --reload
+	uvicorn magic.api.fast:app --reload --port 8005
 
 # Local Docker Commands
 # Local images - using local computer's architecture
@@ -15,9 +15,8 @@ docker_build_local:
 docker_run_local:
 	docker run \
 		-e PORT=8000 -p 8080:8000 \
-			--env-file .env \
-			$(GAR_IMAGE):local
-# perhapst change?  -e PORT=8080 -p 8080:8080
+		--env-file .env \
+		$(GAR_IMAGE):local
 
 docker_run_local_interactively:
 	docker run -it \

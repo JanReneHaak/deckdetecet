@@ -28,10 +28,10 @@ def get_croped_image(image, module):
         elif module == "name":
             return image.crop((0,0,400,65))
         elif module == "set":
-            tmp = image.crop((0,300,400,375))
+            tmp = image.crop((315, 325, 385, 385))
             text = py.image_to_string(tmp)
             if text == "":
-                return image.crop((0,500,400,550))
+                return image.crop((315, 325, 385, 385))
             return tmp
         elif module == "oracle":
             return image.crop((0,350,400,550))

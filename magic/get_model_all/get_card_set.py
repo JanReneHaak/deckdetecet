@@ -1,72 +1,53 @@
-import pandas as pd
-from transformers import TrOCRProcessor, VisionEncoderDecoderModel
-import string
-from rapidfuzz import fuzz
 import logging
-
-# Load the OCR model and tokenizer
 from magic.ml_logic.preprocess import preprocessing
+import numpy as np
+import pandas as pd
+import cv2
+from tensorflow.keras.models import load_model
 
-# Initialize OCR model once
-processor = TrOCRProcessor.from_pretrained("microsoft/trocr-base-stage1")
-model = VisionEncoderDecoderModel.from_pretrained("microsoft/trocr-base-stage1")
+# Constants
+IMG_SIZE = (224, 224)
+MODEL_PATH = "magic/get_model_all/model_sets.h5"
+CLASS_NAMES = ['10e', '2ed', '2x2', '2xm', '30a', '3ed', '40k', '4ed', '5dn', '5ed', '6ed', '7ed', '8ed', '9ed', 'a25', 'acr', 'afc', 'akh', 'akr', 'ala', 'all', 'anb', 'apc', 'arb', 'arc', 'atq', 'avr', 'bbd', 'bchr', 'bfz', 'blb', 'blc', 'bng', 'bok', 'brb', 'brc', 'bro', 'brr', 'c13', 'c14', 'c15', 'c16', 'c17', 'c18', 'c19', 'c20', 'c21', 'ced', 'cei', 'chk', 'chr', 'clu', 'cm2', 'cma', 'cmb2', 'cmd', 'cmm', 'cmr', 'cn2', 'cns', 'con', 'csp', 'da1', 'dbl', 'dgm', 'dis', 'dka', 'dmc', 'dmr', 'dmu', 'dom', 'dpa', 'drk', 'dst', 'dtk', 'e01', 'eld', 'ema', 'emn', 'eve', 'exo', 'fbb', 'fdn', 'fem', 'frf', 'fut', 'gk1', 'gk2', 'gn3', 'gpt', 'grn', 'gtc', 'hbg', 'hml', 'hop', 'hou', 'ice', 'iko', 'ima', 'inv', 'isd', 'j21', 'j22', 'j25', 'jmp', 'jou', 'jud', 'khc', 'khm', 'kld', 'ktk', 'lcc', 'lci', 'lea', 'leb', 'leg', 'lgn', 'lrw', 'ltc', 'ltr', 'm10', 'm11', 'm12', 'm13', 'm14', 'm15', 'm19', 'm20', 'm21', 'm3c', 'mat', 'mb2', 'mbs', 'me1', 'me2', 'mh1', 'mh2', 'mh3', 'mic', 'mid', 'mir', 'mkc', 'mkm', 'mm2', 'mm3', 'mma', 'mmq', 'mor', 'mrd', 'mul', 'ncc', 'nec', 'nem', 'neo', 'nph', 'ody', 'ogw', 'onc', 'one', 'ons', 'ori', 'otc', 'otj', 'p02', 'pafr', 'pblb', 'pbro', 'pc2', 'pca', 'pclb', 'pcy', 'pdmu', 'pdom', 'pdsk', 'peld', 'piko', 'pio', 'pip', 'pkhm', 'plc', 'plci', 'pls', 'plst', 'pm20', 'pm21', 'pmkm', 'pmom', 'pneo', 'pone', 'por', 'potj', 'prm', 'psal', 'psnc', 'pstx', 'ptc', 'pthb', 'ptk', 'pvow', 'pwar', 'pwoe', 'pxln', 'pz1', 'pz2', 'ren', 'rix', 'rna', 'roe', 'rtr', 'rvr', 's99', 'scd', 'scg', 'shm', 'sir', 'sld', 'snc', 'soi', 'sok', 'som', 'stx', 'sum', 'td0', 'thb', 'tmp', 'tor', 'tpr', 'tsb', 'tsp', 'tsr', 'uds', 'ulg', 'uma', 'unf', 'unh', 'usg', 'ust', 'vis', 'vma', 'voc', 'vow', 'war', 'wc00', 'wc01', 'wc02', 'wc03', 'wc04', 'wc97', 'wc98', 'wc99', 'who', 'woc', 'woe', 'wot', 'wwk', 'xln', 'zen', 'znr']
 
-def get_card_set(image_path: str, card_name: str, df: pd.DataFrame) -> str:
-    """
-    Extract the card set name from an image, validate it, and ensure the combination
-    of card name and set exists in the CSV file.
-    """
+# Define ImageNet mean and std values for MobileNetV3
+MEAN = [0.485, 0.456, 0.406]  # Mean of ImageNet dataset
+STD = [0.229, 0.224, 0.225]   # Std of ImageNet dataset
+
+
+# Preprocess an image from array format
+def preprocess_image(img_array, img_size):
+    """Preprocess an image for model prediction."""
+    if not isinstance(img_array, np.ndarray):
+        raise ValueError("Input must be a NumPy array.")
+
+    img_resized = cv2.resize(img_array, img_size)
+    img_resized = img_resized / 255.0  # Normalize
+    img_resized = (img_resized - MEAN) / STD  # Standardize
+    return np.expand_dims(img_resized, axis=0)
+
+# Define the predict function with updated code that uses the processed image
+def get_card_set(image_path, card_name, filtered_df, model):
     try:
-        # Step 1: Preprocess the image to crop the set region
+        logging.info("Preprocessing image for set prediction...")
         cropped_image = preprocessing(image_path, "set")
-        if cropped_image is None:
-            raise ValueError("❌ Set region could not be extracted from the image. ❌")
 
-        # Step 2: Use OCR to extract text from the cropped image
-        pixel_values = processor(images=cropped_image, return_tensors="pt").pixel_values
-        generated_ids = model.generate(pixel_values)
-        extracted_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+        img_array = preprocess_image(np.array(cropped_image), IMG_SIZE)
+        predictions = model.predict(img_array)
 
-        # Step 3: Clean up the extracted text
-        cleaned_set = clean_up_set(extracted_text)
-        logging.info(f"Extracted set: {cleaned_set}")
+        # Top 3 predictions
+        top_indices = np.argsort(predictions[0])[-3:][::-1]
+        top_classes = [CLASS_NAMES[idx] for idx in top_indices]
 
-        # Step 4: Validate the set name against the CSV
-        possible_sets = df[df["name"].str.lower() == card_name.lower()]["set"].str.lower().unique()
+        # Find a match in the filtered dataframe
+        for predicted_set in top_classes:
+            if predicted_set in filtered_df['set'].values:
+                logging.info(f"Matched set: {predicted_set}")
+                return predicted_set
 
-        # Match the extracted set with possible sets using fuzzy matching
-        matched_set = validate_set_with_fuzz(cleaned_set, possible_sets)
-        if not matched_set:
-            raise ValueError(f"❌ Could not validate the set for card '{card_name}'. ❌")
-
-        logging.info(f"Validated set: {matched_set}")
-        return matched_set.title()
+        logging.warning("No matching set found in the database.")
+        return "❌ Set could not be identified."
 
     except Exception as e:
         logging.error(f"Error in get_card_set: {e}")
-        return "❌ Set could not be determined. Please check the input image. ❌"
-
-
-def clean_up_set(text: str) -> str:
-    """
-    Clean up the OCR extracted text: remove punctuation and normalize case.
-    """
-    text = text.strip().lower()
-    text = "".join(char for char in text if char not in string.punctuation)
-    return text
-
-
-def validate_set_with_fuzz(extracted_set: str, possible_sets: list) -> str:
-    """
-    Validate the extracted set name using fuzzy matching against possible sets.
-    """
-    best_match = None
-    best_score = 0
-
-    for valid_set in possible_sets:
-        score = fuzz.ratio(extracted_set, valid_set)
-        if score > best_score and score > 70:  # Threshold for a valid match
-            best_match = valid_set
-            best_score = score
-
-    return best_match
+        return "❌ Set prediction failed."

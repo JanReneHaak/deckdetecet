@@ -4,11 +4,15 @@ from sklearn.metrics.pairwise import cosine_similarity # For computing cosine si
 import logging
 
 # Load the CSV ID file globally
-def get_similar_cards(card_name: str, df_emb, model_similar):
+def get_similar_cards(card_name: str, df_emb: pd.DataFrame):
     try:
+        # Validate embeddings are numpy arrays
+        assert df_emb['embeddings'].apply(lambda x: isinstance(x, np.ndarray)).all(), "Invalid embeddings format."
+
         # Ensure the card name exists in the DataFrame
         if card_name.lower() not in df_emb['name'].str.lower().values:
             raise ValueError(f"Card '{card_name}' not found in the database.")
+
         # Get the embedding of the input card
         input_embedding = df_emb[df_emb['name'].str.lower() == card_name.lower()].iloc[0]['embeddings']
         logging.info(f"Input embedding: {input_embedding}")
@@ -20,7 +24,7 @@ def get_similar_cards(card_name: str, df_emb, model_similar):
 
         # Add similarity scores to the DataFrame
         df_emb['similarity'] = similarities
-        logging.info(f"DataFrame with similarities: {df_emb}")
+        logging.info(f"DataFrame with similarities: {df_emb[['name', 'similarity']]}")
 
         # Get top 3 similar cards (excluding the input card itself)
         similar_cards = (
@@ -32,4 +36,5 @@ def get_similar_cards(card_name: str, df_emb, model_similar):
         return similar_cards
 
     except Exception as e:
+        logging.error(f"Error in get_similar_cards: {e}")
         raise ValueError(f"Error in get_similar_cards: {e}")

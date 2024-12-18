@@ -1,8 +1,11 @@
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
 import pandas as pd
 from magic.ml_logic.preprocess import preprocessing
 from transformers import TrOCRProcessor, VisionEncoderDecoderModel
 import string
 from rapidfuzz import fuzz
+
 
 def get_card_name(image_path: str, df: pd.DataFrame):
     df["name"] = df["name"].apply(lambda x: x.lower())

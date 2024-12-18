@@ -14,8 +14,6 @@
 - **Counter Card Suggestions:**
   Use OpenAI's GPT models to suggest counter cards for a given card.
 
-- **Pre-trained Models:**
-  Powered by Hugging Face (`SentenceTransformer` and `TrOCR`).
 
 - **Cloud Integration:**
   Integration with Google Cloud for storage and deployment.
